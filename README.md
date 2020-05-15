@@ -27,16 +27,15 @@ $base = new Base('/filesbase');
 $temporary =  new Temporary($base->directory('tmp'));
 
 // creates a TemporaryDirectory
-$file = $temporary->file('test.json');
 $directory = $temporary->directory();
 $directory->create();
 $directory->drop();
 
 // creates a TemporaryBasicFile
-$file = $temporary->file('filename');
+$file = $temporary->file();
 
 // creates a TemporaryJsonFile
-$file = $temporary->file('test.json');
+$file = $temporary->file('json');
 
 // new file types - ConfigJsonFile extends JsonFile
 $base->getFileTypesHandler()->addType('config.json', ConfigJsonFile::class);
@@ -51,3 +50,19 @@ $temporary->getFileClassMapper()->addType(ConfigJsonFile::class, TemporaryConfig
 $file = $temporary->file('config.json');
 
 ```
+
+You can also track any creations so that all can be dropped at the same time. This is primarily to catch issues where the destruction of the object does not take place when there has been an error/exception.
+
+```php
+<?php
+
+$code = $temporary->track();
+
+$file = $temporary->file();
+$file->create();
+
+$$directory = $temporary->directory();
+$directory->create();
+
+// drop all temporary files and directories since code was created
+$temporary->dropSice($code);
