@@ -156,4 +156,44 @@ class TemporaryTest extends TestCase
         $this->assertSame($mapper, $temporary->getFileClassMapper());
     }
 
+    public function testTrackChanges()
+    {
+        $code1 = $this->temporary->track();
+        $d1 = $this->temporary->directory();
+        $d1->create();
+        $code2 = $this->temporary->track();
+        $d2 = $this->temporary->directory();
+        $d2->create();
+        $d3 = $this->temporary->directory();
+        $f1 = $this->temporary->file();
+        $f1->create();
+        $f2 = $this->temporary->file();
+        $f2->create();
+        $f2->drop();
+
+        $this->assertTrue($d1->exists());
+        $this->assertTrue($d2->exists());
+        $this->assertFalse($d3->exists());
+        $this->assertTrue($f1->exists());
+        $this->assertFalse($f2->exists());
+
+        // should leave only those since code2 that still exists;
+        $this->temporary->dropSince($code2);
+
+        $this->assertTrue($d1->exists());
+        $this->assertFalse($d2->exists());
+        $this->assertFalse($d3->exists());
+        $this->assertFalse($f1->exists());
+        $this->assertFalse($f2->exists());
+
+        // should delete all since code1 that still exist
+        $this->temporary->dropSince($code1);
+        $this->assertFalse($d1->exists());
+        $this->assertFalse($d2->exists());
+        $this->assertFalse($d3->exists());
+        $this->assertFalse($f1->exists());
+        $this->assertFalse($f2->exists());
+
+    }
+
 }
